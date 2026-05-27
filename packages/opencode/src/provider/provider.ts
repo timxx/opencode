@@ -1612,8 +1612,10 @@ export const layer = Layer.effect(
         const customFetch = options["fetch"]
         const chunkTimeout = options["chunkTimeout"]
         const headerTimeout = options["headerTimeout"]
+        const customBody = options["body"] as Record<string, unknown> | undefined
         delete options["chunkTimeout"]
         delete options["headerTimeout"]
+        delete options["body"]
 
         options["fetch"] = async (input: any, init?: BunFetchRequestInit) => {
           const fetchFn = customFetch ?? fetch
@@ -1648,6 +1650,12 @@ export const layer = Layer.effect(
               }
               opts.body = JSON.stringify(body)
             }
+          }
+
+          if (customBody && opts.body && opts.method === "POST") {
+            const body = JSON.parse(opts.body as string)
+            Object.assign(body, customBody)
+            opts.body = JSON.stringify(body)
           }
 
           const res = await fetchFn(input, {
